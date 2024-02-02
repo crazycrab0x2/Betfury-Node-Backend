@@ -1,0 +1,58 @@
+Modefied Backend Feature
+
+-register // controller/authController/userRegister_new
+
+	when users register, ther send only username, email, password, currency, country, phone.
+
+	dis_currency will be set currency of request.(I don't know what dis_currency is and I use this field in gameControllerNew to openGame).
+
+	user_users schema changed(
+		deposited: original - bool, now - number (if user deposit money, deposited will increase by one - frontend will change according to deposited count)
+
+		added freespin (Object, default - {count: 3, lastSpin: Date.now() - 7200000, lastDepoist: Date.now()} it is used in feespin method in gameControllerNew)
+
+		changed 'status' default value as 'allow'
+		
+		added recentPlay (Array)
+	)
+
+- controller/gameControllerNew
+
+	in openGame() I used users dis_currency for game.
+
+	getGameListsCG(), getGameListsBO(), getGameListsRyan() : load games and game providers(vendor) from providers(CasinoGold, BlueOcean, Ryan)
+
+	openDemoGame(), getDemoGameLaunchUrlOfGame(), openGame(), getGameLaunchUrlOfGame() methods changed and work well.
+
+	getGames(), getGameChild(), getProviders() - little changed, work well
+
+	getGamesBySlug() -get game data with unique field 'slug'. (on frontend, gameplay page url is "/game/[slug]", call getGameBySlug api when refresh)
+
+	freespin() - forntend has wheel and this endpoint is called when user rotate wheel
+
+	user_session schema changed(
+		added gameProfile (Object, it is used in gameControllerNew and integration files. contains game data user opend)
+	)
+
+	gameList schema changed(
+		launchUrlId: 1-casinogold, 2-blueocean, 3-ryan
+		slug: unique identifier of game. (generated in getGameListsCG(), getGameListsBO(), getGameListsRyan())
+	)
+
+	*issue on getGames()
+	sort({opens: -1}) returns unexpected result because after load games from providers 'opens' feild of games is 0.
+
+-controller/integrationCG
+	
+	contains callback methods for CasinoGold
+	no issue, works well.
+
+-controller/integrationBO
+	
+	contains callback methods for BlueOcean -endpoint() and Ryan - ryan()
+	no issue, works well.
+
+-controller/walletController
+	
+	we used nowpayments.io for crypto deposit
+	cryptoDeposit(), nowpaymentCallback(), getEstimateAmount()
